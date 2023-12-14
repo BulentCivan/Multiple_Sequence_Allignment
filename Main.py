@@ -35,10 +35,12 @@ def getting_gap_penalty():
             print("Error: Please enter a valid number!")
     return gap_penalty
 
+
+similarity_table = {}
 def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
     seq1_length = len(seq1)
     seq2_length = len(seq2)
-    similarity_table = {}
+
 
     score_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
     traceback_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)

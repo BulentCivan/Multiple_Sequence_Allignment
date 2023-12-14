@@ -67,10 +67,10 @@ def main():
     first_value = next(values_iterator, None)
     second_value = next(values_iterator, None)
 
-    #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
+    print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
 
 
-    print(pairwise_sequence_alignment("CQLMKTERPA","DSPDEREEWMR",my_hash_table, gap_penalty))
+    #print(pairwise_sequence_alignment("CQLMKTERPA","DSPDEREEWMR",my_hash_table, gap_penalty))
 
 if __name__ == "__main__":
     main()

@@ -39,12 +39,22 @@ def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
     seq1_length = len(seq1)
     seq2_length = len(seq2)
 
-    score_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
+    score_matrix = np.zeros((seq1_length, seq2_length), dtype=int)
 
-    for x in range(seq1_length + 1):
+    for x in range(seq1_length):
         score_matrix[x][0] = x * gap_penalty
-    for y in range(seq2_length + 1):
+    for y in range(seq2_length):
         score_matrix[0][y] = y * gap_penalty
+
+
+    print (blosum62[seq1[0],seq2[0]])
+    for i in range(1,seq1_length):
+        for j in range (1,seq2_length):
+            matched = score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]
+            deleted = score_matrix[i - 1][j] + gap_penalty
+            inserted = score_matrix[i][j - 1] + gap_penalty
+            score_matrix[i][j] = max(matched, deleted, inserted)
+    
 
     return score_matrix
 
@@ -57,8 +67,10 @@ def main():
     first_value = next(values_iterator, None)
     second_value = next(values_iterator, None)
 
-    print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
-    #print(pairwise_sequence_alignment("CQLMKTERPA","DSPDEREEWMR",my_hash_table, gap_penalty))
+    #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
+
+
+    print(pairwise_sequence_alignment("CQLMKTERPA","DSPDEREEWMR",my_hash_table, gap_penalty))
 
 if __name__ == "__main__":
     main()

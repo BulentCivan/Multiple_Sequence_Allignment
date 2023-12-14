@@ -1,3 +1,5 @@
+import numpy as np
+
 def read_Blosum62():
     Blosum62_file_path = 'Blosum62.txt'
     scoring_matrix = {}
@@ -33,11 +35,30 @@ def getting_gap_penalty():
             print("Error: Please enter a valid number!")
     return gap_penalty
 
-def main():
+def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
+    seq1_length = len(seq1)
+    seq2_length = len(seq2)
 
+    score_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
+
+    for x in range(seq1_length + 1):
+        score_matrix[x][0] = x * gap_penalty
+    for y in range(seq2_length + 1):
+        score_matrix[0][y] = y * gap_penalty
+
+    return score_matrix
+
+def main():
     my_hash_table = read_Blosum62()
     #gap_penalty= getting_gap_penalty()
     input1=read_fasta_file("Input2.txt")
+    gap_penalty = getting_gap_penalty()
+    values_iterator = iter(input1.values())
+    first_value = next(values_iterator, None)
+    second_value = next(values_iterator, None)
+
+    print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
+    #print(pairwise_sequence_alignment("CQLMKTERPA","DSPDEREEWMR",my_hash_table, gap_penalty))
 
 if __name__ == "__main__":
     main()

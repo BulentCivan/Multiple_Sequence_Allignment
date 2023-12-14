@@ -38,6 +38,7 @@ def getting_gap_penalty():
 def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
     seq1_length = len(seq1)
     seq2_length = len(seq2)
+    similarity_table = {}
 
     score_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
     traceback_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
@@ -59,26 +60,36 @@ def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
 
 
     i, j = seq1_length, seq2_length
+    exact_matches=0
+    allign_length=0
     while i > 0 or j > 0:
         if i > 0 and j > 0 and score_matrix[i][j] == score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]:
             newseq1 = seq1[i - 1] + newseq1
             newseq2 = seq2[j - 1] + newseq2
+            exact_matches += 1
+            allign_length += 1
+
             i -= 1
             j -= 1
         elif i > 0 and score_matrix[i][j] == score_matrix[i - 1][j] + gap_penalty:
             newseq1 = seq1[i - 1] + newseq1
             newseq2 = '-' + newseq2
+            allign_length += 1
             i -= 1
         else:
             newseq1 = '-' + newseq1
             newseq2 = seq2[j - 1] + newseq2
+            allign_length += 1
             j -= 1
 
-
+    similarity_score=exact_matches/allign_length
+    similarity_table[(seq1,seq2)] = similarity_score
 
     print(newseq1)
-    print(newseq2)  
+    print(newseq2)
 
+    print(similarity_table)
+    print(similarity_score)
     return score_matrix
 
 def main():

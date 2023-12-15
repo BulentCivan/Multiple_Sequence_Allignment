@@ -68,7 +68,7 @@ def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
         if i > 0 and j > 0 and score_matrix[i][j] == score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]:
             newseq1 = seq1[i - 1] + newseq1
             newseq2 = seq2[j - 1] + newseq2
-            exact_matches += 1
+
             allign_length += 1
 
             i -= 1
@@ -84,14 +84,20 @@ def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
             allign_length += 1
             j -= 1
 
+    for i in range(0,len(newseq1)):
+        if(newseq1[i] == newseq2[i]):
+            exact_matches +=1
+
+    print(allign_length)
+    print(exact_matches)
     similarity_score=exact_matches/allign_length
-    similarity_table[(seq1,seq2)] = similarity_score
+    similarity_table[(seq1,seq2)] = f"{similarity_score:.2f}"
 
     print(newseq1)
     print(newseq2)
 
     print(similarity_table)
-    print(similarity_score)
+
     return score_matrix
 
 def main():
@@ -106,7 +112,7 @@ def main():
     #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
 
 
-    print(pairwise_sequence_alignment("CQLMKTERPRPNTFVIRCLQWTTVIERTFHVDSPDEREEWMRAIQMVANSLKQRGPGEDA","MKTERPRPNTFIIRCLQWTTVIERTFHVETPEEREEWTTAIQTVADGLKKQEEEE",my_hash_table, gap_penalty))
+    print(pairwise_sequence_alignment("WDPFRDWYPHSRLFDQAFGLPRLPEEWSQWLGGSSWPGYVRPLPPAAIESPAVAAP","WDPFRDWYPVHSRLFDQAFGLPRLPEEWAQWFGGSSWPGYVRPLPAAEAPAV",my_hash_table, gap_penalty))
 
 if __name__ == "__main__":
     main()

@@ -68,25 +68,21 @@ def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
         if i > 0 and j > 0 and score_matrix[i][j] == score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]:
             newseq1 = seq1[i - 1] + newseq1
             newseq2 = seq2[j - 1] + newseq2
-
-            allign_length += 1
-
             i -= 1
             j -= 1
         elif i > 0 and score_matrix[i][j] == score_matrix[i - 1][j] + gap_penalty:
             newseq1 = seq1[i - 1] + newseq1
             newseq2 = '-' + newseq2
-            allign_length += 1
             i -= 1
         else:
             newseq1 = '-' + newseq1
             newseq2 = seq2[j - 1] + newseq2
-            allign_length += 1
             j -= 1
 
     for i in range(0,len(newseq1)):
         if(newseq1[i] == newseq2[i]):
             exact_matches +=1
+        allign_length += 1
 
     print(allign_length)
     print(exact_matches)

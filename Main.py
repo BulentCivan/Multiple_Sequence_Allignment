@@ -37,78 +37,81 @@ def getting_gap_penalty():
 
 
 similarity_table = {}
-def pairwise_sequence_alignment(seq1, seq2,blosum62, gap_penalty):
-    seq1_length = len(seq1)
-    seq2_length = len(seq2)
+def pairwise_sequence_alignment(input,blosum62, gap_penalty):
+    sequence_names = list(input.keys())
+
+    for k in range(len(sequence_names)):
+        for l in range(k + 1, len(sequence_names)):
+
+            seq1_length = len(input[(sequence_names[k])])
+            seq2_length = len(input[(sequence_names[l])])
+            seq1=input[(sequence_names[k])]
+            seq2=input[(sequence_names[l])]
+            score_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
+            traceback_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
+            for x in range(seq1_length+1):
+                score_matrix[x][0] = x * gap_penalty
+            for y in range(seq2_length+1):
+                score_matrix[0][y] = y * gap_penalty
+            newseq1=""
+            newseq2=""
 
 
-    score_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
-    traceback_matrix = np.zeros((seq1_length+1, seq2_length+1), dtype=int)
-    for x in range(seq1_length+1):
-        score_matrix[x][0] = x * gap_penalty
-    for y in range(seq2_length+1):
-        score_matrix[0][y] = y * gap_penalty
-    newseq1=""
-    newseq2=""
-
-
-    for i in range(1,seq1_length+1):
-        for j in range (1,seq2_length+1):
-            matched = score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]
-            deleted = score_matrix[i - 1][j] + gap_penalty
-            inserted = score_matrix[i][j - 1] + gap_penalty
-            score_matrix[i][j] = max(matched, deleted, inserted)
+            for i in range(1,seq1_length+1):
+                for j in range (1,seq2_length+1):
+                    matched = score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]
+                    deleted = score_matrix[i - 1][j] + gap_penalty
+                    inserted = score_matrix[i][j - 1] + gap_penalty
+                    score_matrix[i][j] = max(matched, deleted, inserted)
 
 
 
-    i, j = seq1_length, seq2_length
-    exact_matches=0
-    allign_length=0
-    while i > 0 or j > 0:
-        if i > 0 and j > 0 and score_matrix[i][j] == score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]:
-            newseq1 = seq1[i - 1] + newseq1
-            newseq2 = seq2[j - 1] + newseq2
-            i -= 1
-            j -= 1
-        elif i > 0 and score_matrix[i][j] == score_matrix[i - 1][j] + gap_penalty:
-            newseq1 = seq1[i - 1] + newseq1
-            newseq2 = '-' + newseq2
-            i -= 1
-        else:
-            newseq1 = '-' + newseq1
-            newseq2 = seq2[j - 1] + newseq2
-            j -= 1
+            i, j = seq1_length, seq2_length
+            exact_matches=0
+            allign_length=0
+            while i > 0 or j > 0:
+                if i > 0 and j > 0 and score_matrix[i][j] == score_matrix[i - 1][j - 1] + blosum62[seq1[i-1],seq2[j-1]]:
+                    newseq1 = seq1[i - 1] + newseq1
+                    newseq2 = seq2[j - 1] + newseq2
+                    i -= 1
+                    j -= 1
+                elif i > 0 and score_matrix[i][j] == score_matrix[i - 1][j] + gap_penalty:
+                    newseq1 = seq1[i - 1] + newseq1
+                    newseq2 = '-' + newseq2
+                    i -= 1
+                else:
+                    newseq1 = '-' + newseq1
+                    newseq2 = seq2[j - 1] + newseq2
+                    j -= 1
 
-    for i in range(0,len(newseq1)):
-        if(newseq1[i] == newseq2[i]):
-            exact_matches +=1
-        allign_length += 1
+            for i in range(0,len(newseq1)):
+                if(newseq1[i] == newseq2[i]):
+                    exact_matches +=1
+                allign_length += 1
 
-    print(allign_length)
-    print(exact_matches)
-    similarity_score=exact_matches/allign_length
-    similarity_table[(seq1,seq2)] = f"{similarity_score:.2f}"
+            print(allign_length)
+            print(exact_matches)
+            similarity_score=exact_matches/allign_length
+            similarity_table[(sequence_names[k],sequence_names[l])] = f"{similarity_score:.2f}"
 
-    print(newseq1)
-    print(newseq2)
+            print(newseq1)
+            print(newseq2)
 
-    print(similarity_table)
+            print(similarity_table)
 
-    return score_matrix
+            print( score_matrix)
 
 def main():
     my_hash_table = read_Blosum62()
     #gap_penalty= getting_gap_penalty()
-    input1=read_fasta_file("Input2.txt")
+    input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
-    values_iterator = iter(input1.values())
-    first_value = next(values_iterator, None)
-    second_value = next(values_iterator, None)
+
 
     #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
 
 
-    print(pairwise_sequence_alignment("WDPFRDWYPHSRLFDQAFGLPRLPEEWSQWLGGSSWPGYVRPLPPAAIESPAVAAP","WDPFRDWYPVHSRLFDQAFGLPRLPEEWAQWFGGSSWPGYVRPLPAAEAPAV",my_hash_table, gap_penalty))
+    pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
 
 if __name__ == "__main__":
     main()

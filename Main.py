@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.cluster.hierarchy import linkage, dendrogram
+import matplotlib.pyplot as plt
 
 def read_Blosum62():
     Blosum62_file_path = 'Blosum62.txt'
@@ -89,17 +91,41 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
                     exact_matches +=1
                 allign_length += 1
 
-            print(allign_length)
-            print(exact_matches)
             similarity_score=exact_matches/allign_length
             similarity_table[(sequence_names[k],sequence_names[l])] = f"{similarity_score:.2f}"
 
-            print(newseq1)
-            print(newseq2)
+            #print(newseq1)
+            #print(newseq2)
 
-            print(similarity_table)
+            #print(similarity_table)
+            #print( score_matrix)
 
-            print( score_matrix)
+def guide_tree(similarity_table):
+    # Extract unique entities from the hash table
+    entities = set(entity for pair in similarity_table.keys() for entity in pair)
+
+    # Create a dictionary to map entities to indices
+    entity_to_index = {entity: i for i, entity in enumerate(entities)}
+
+    # Initialize an empty distance matrix
+    num_entities = len(entities)
+    distance_matrix = np.zeros((num_entities, num_entities))
+
+    # Fill in the distance matrix based on the similarity hash table
+    for pair, similarity_score in similarity_table.items():
+        entity1, entity2 = pair
+        index1, index2 = entity_to_index[entity1], entity_to_index[entity2]
+
+        # Convert similarity score to a float and subtract from 1 to get distance
+        distance = 1.0 - float(similarity_score)
+
+        # Populate the distance matrix
+        distance_matrix[index1, index2] = distance
+        distance_matrix[index2, index1] = distance
+
+    # Print the distance matrix
+    print("Distance Matrix:")
+    print(distance_matrix)
 
 def main():
     my_hash_table = read_Blosum62()
@@ -107,11 +133,9 @@ def main():
     input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
 
-
-    #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
-
-
     pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
+
+    guide_tree(similarity_table)
 
 if __name__ == "__main__":
     main()

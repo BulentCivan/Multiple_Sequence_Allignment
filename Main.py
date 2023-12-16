@@ -1,6 +1,8 @@
 import numpy as np
+from scipy.cluster._optimal_leaf_ordering import squareform
 from scipy.cluster.hierarchy import linkage, dendrogram
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def read_Blosum62():
     Blosum62_file_path = 'Blosum62.txt'
@@ -101,35 +103,31 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
             #print( score_matrix)
 
 def guide_tree(similarity_table):
-    # Extract unique entities from the hash table
-    entities = set(entity for pair in similarity_table.keys() for entity in pair)
-
-    # Create a dictionary to map entities to indices
+    entities = list(set(entity for pair in similarity_table.keys() for entity in pair))
     entity_to_index = {entity: i for i, entity in enumerate(entities)}
 
-    # Initialize an empty distance matrix
     num_entities = len(entities)
     distance_matrix = np.zeros((num_entities, num_entities))
 
-    # Fill in the distance matrix based on the similarity hash table
     for pair, similarity_score in similarity_table.items():
         entity1, entity2 = pair
         index1, index2 = entity_to_index[entity1], entity_to_index[entity2]
-
-        # Convert similarity score to a float and subtract from 1 to get distance
         distance = 1.0 - float(similarity_score)
 
-        # Populate the distance matrix
         distance_matrix[index1, index2] = distance
         distance_matrix[index2, index1] = distance
 
-    # Print the distance matrix
+    # Convert the distance matrix to a Pandas DataFrame
+    distance_df = pd.DataFrame(distance_matrix, index=entities, columns=entities)
+
+    # Print the distance matrix with entity names
     print("Distance Matrix:")
-    print(distance_matrix)
+    print(distance_df)
+
+
 
 def main():
     my_hash_table = read_Blosum62()
-    #gap_penalty= getting_gap_penalty()
     input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
 

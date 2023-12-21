@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 def read_Blosum62():
     Blosum62_file_path = 'Blosum62.txt'
@@ -92,7 +93,7 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
             print(allign_length)
             print(exact_matches)
             similarity_score=exact_matches/allign_length
-            similarity_table[(sequence_names[k],sequence_names[l])] = f"{similarity_score:.2f}"
+            similarity_table[(sequence_names[k],sequence_names[l])] = f"{1-similarity_score:.2f}"
 
             print(newseq1)
             print(newseq2)
@@ -101,18 +102,46 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
 
             print( score_matrix)
 
+    return similarity_table
+
+
+
+def UPGMA(similarity_table):
+
+    min_value_key = min(similarity_table, key=lambda k: similarity_table[k])
+    min_value = similarity_table[min_value_key]
+    print("Minimum Distance Names:", min_value_key)
+    print("Minimum Distance Value:", min_value)
+    new_similarity_table = np.ones((len(similarity_table.values()), len(similarity_table.keys())), dtype=float)
+    print(new_similarity_table)
+    for i in range(0, len(new_similarity_table)):
+        for j in range(0, len(new_similarity_table)):
+            print(min_value_key[0])
+            print(min_value_key[1])
+            print(list(similarity_table)[j])
+
+            #if (min_value_key[0] == similarity_table.key(j))
+        
+        
+
+
+
+
+
+
 def main():
     my_hash_table = read_Blosum62()
     #gap_penalty= getting_gap_penalty()
     input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
-    print("branch deneme")
 
 
     #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
 
 
-    pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
+    similarity_table = pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
+
+    UPGMA(similarity_table)
 
 if __name__ == "__main__":
     main()

@@ -106,6 +106,7 @@ def main():
     #gap_penalty= getting_gap_penalty()
     input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
+    print("branch deneme")
 
 
     #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))

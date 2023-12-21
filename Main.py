@@ -115,13 +115,11 @@ def UPGMA(similarity_table):
     new_similarity_table = np.ones((len(similarity_table.values()), len(similarity_table.keys())), dtype=float)
     print(new_similarity_table)
     for i in range(0, len(new_similarity_table)):
-        for j in range(0, len(new_similarity_table)):
-            print(min_value_key[0])
-            print(min_value_key[1])
-            print(list(similarity_table)[j])
+        #for j in range(0, len(new_similarity_table)):
 
-            #if (min_value_key[0] == similarity_table.key(j))
-        
+            print(list(similarity_table)[i])
+            if min_value_key[1] in list(similarity_table)[i]:
+                #print((similarity_table)[min_value_key[0]])
         
 
 

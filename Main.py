@@ -102,7 +102,8 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
             #print(similarity_table)
             #print( score_matrix)
 
-def guide_tree(similarity_table):
+
+def distance_matrix_calculation(similarity_table):
     entities = list(set(entity for pair in similarity_table.keys() for entity in pair))
     entity_to_index = {entity: i for i, entity in enumerate(entities)}
 
@@ -126,14 +127,82 @@ def guide_tree(similarity_table):
 
 
 
+def guide_tree(distance_table):
+    temp_dist_table = {}
+    if not distance_table:
+        print("Hash table is empty.")
+        return
+
+    # Find the minimum value and corresponding key
+    min_key = min(distance_table, key=lambda k: float(distance_table[k]))
+    min_value = float(distance_table[min_key])
+    del distance_table[min_key]
+
+    print("Minimum Value:", min_value)
+    print("Removed Entry:", min_key)
+
+    # Update other entries containing the minimum key
+    for key in distance_table.keys():
+        if min_key[0] in key:
+            if min_key[0] == key[0]:
+                other_key=key[1]
+            else:
+                other_key = key[0]
+
+            # Calculate the average distance for the updated entry
+            if (min_key[1], other_key) in distance_table:
+                avg_distance = (float(distance_table[key]) + float(distance_table[(min_key[1],other_key)])) / 2
+                temp_dist_table[(min_key[0]+min_key[1],other_key)]=round(avg_distance, 2)
+            elif (other_key,min_key[1]) in distance_table:
+                avg_distance = (float(distance_table[key]) + float(distance_table[(other_key, min_key[1])])) / 2
+                temp_dist_table[(min_key[0] + min_key[1], other_key)] = round(avg_distance, 2)
+
+        elif min_key[1] in key:
+            if min_key[1] == key[0]:
+                other_key = key[1]
+            else:
+                other_key = key[0]
+
+            if (min_key[0], other_key) in distance_table:
+                # Calculate the average distance for the updated entry
+                avg_distance = (float(distance_table[key]) + float(distance_table[(min_key[0], other_key)])) / 2
+                temp_dist_table[(min_key[0] + min_key[1], other_key)] = round(avg_distance, 2)
+            elif (other_key, min_key[0]) in distance_table:
+                # Calculate the average distance for the updated entry
+                avg_distance = (float(distance_table[key]) + float(distance_table[(other_key, min_key[0])])) / 2
+                temp_dist_table[(min_key[0] + min_key[1], other_key)] = round(avg_distance, 2)
+
+    # Remove the entry with the minimum value
+    keys_to_remove = [key for key in distance_table.keys() if min_key[0] in key or min_key[1] in key]
+    for key in keys_to_remove:
+        del distance_table[key]
+
+
+    # Print the result
+    #print("temp distance table:", temp_dist_table)
+    distance_table.update(temp_dist_table)
+    print("Distance Table:", distance_table)
+    # Recursively call the function with the updated table
+    if len(distance_table) >= 2:
+        guide_tree(distance_table)
+    else:
+        return
+
 def main():
     my_hash_table = read_Blosum62()
-    input1=read_fasta_file("Input.txt")
+    input1=read_fasta_file("Input2.txt")
     gap_penalty = getting_gap_penalty()
 
     pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
 
-    guide_tree(similarity_table)
+    # Convert similarity values to distance values
+    distance_table = {(key[0], key[1]): round(1 - float(value), 2) for key, value in similarity_table.items()}
+
+    distance_matrix_calculation(similarity_table)
+    guide_tree(distance_table)
+
+
+
 
 if __name__ == "__main__":
     main()

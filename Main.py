@@ -136,58 +136,88 @@ def guide_tree(similarity_table):
 
     # Convert the distance matrix to a Pandas DataFrame
     distance_df = pd.DataFrame(distance_matrix, index=entities, columns=entities)
+    mergedtable = distance_df
+    count = 1
+    merged_named_list = []
+    while not mergedtable.columns.size < 1 :  # Continue until the DataFrame is empty
 
-    #distance matrix minimum valuee
-    minvalue = distance_df.min().min().round(2)
-    min_index = distance_df.stack().idxmin()
-    row, column = min_index
-    print("Minimum Distance Names:", row, column)
-    print(distance_df)
-    for i in range(0, len(distance_df)):
-        new_entity = row + column
-        mergedtable = distance_df
+        min_index = mergedtable.stack().idxmin()
+        row, column = min_index
+        print("Minimum Distance Names:", row, column)
+        print("Guide Tree: ")
+        print(mergedtable)
 
-        if distance_df.columns[i] != row and distance_df.columns[i] != column:
+        for i in range(0, len(mergedtable)):
+            new_entity = row + column
             print()
-            temp = (distance_df.iloc[i][row].round(2) + distance_df.iloc[i][column].round(2))/2
-            print(distance_df.columns[i],distance_df.iloc[i][row].round(2),"/2", "+" ,distance_df.iloc[i][column].round(2),"/2", "=",temp.round(2))
+            if mergedtable.columns[i] != row and mergedtable.columns[i] != column:
 
-            mergedtable.at[new_entity, distance_df.columns[i]] = temp.round(2)
-            mergedtable.at[distance_df.columns[i], new_entity] = temp.round(2)
-            mergedtable.at[new_entity, new_entity] = 1
+                temp = (mergedtable.iloc[i][row].round(2) + mergedtable.iloc[i][column].round(2))/2
+                print(mergedtable.columns[i], mergedtable.iloc[i][row].round(2), "/2", "+",
+                      mergedtable.iloc[i][column].round(2), "/2", "=", temp.round(2))
 
-                
-                
-        mergedtable = distance_df.drop([row, column])
+                mergedtable.at[new_entity, mergedtable.columns[i]] = temp.round(2)
+                mergedtable.at[mergedtable.columns[i], new_entity] = temp.round(2)
+                mergedtable.at[new_entity, new_entity] = 1
+
+        merged_named = str(count), '. Step: Merged', row, 'and', column, 'to', new_entity
+        merged_named_list.append(merged_named)
+
         mergedtable = mergedtable.drop([row, column], axis=1)
-        
-
-    print("Merged Table:")
-    print(mergedtable)
-            
+        mergedtable = mergedtable.drop([row, column], axis=0)
+        count += 1
 
 
-# use upgma method to my distane matrix without scipy
-def UPGMA(distance_df):
-    # Convert the distance DataFrame to a condensed distance matrix
-    distance_condensed = squareform(distance_df, checks=False)
+    merged_named_list = [' '.join(map(str, x)) for x in merged_named_list]
+    # print every list element in a new line
+    for i in range(0, len(merged_named_list)):
+        print(merged_named_list[i])
 
-    # Calculate the linkage array and dendrogram
-    linkage_array = linkage(distance_condensed, method='average')
-    dendrogram(linkage_array, labels=distance_df.index, color_threshold=0)
+    return mergedtable
 
-    # Customize and display the plot
-    plt.title('UPGMA Clustering')
+# use upgma method to my distance dict to  matrix  using scipy
+def UPGMA(similarity_table):
+    entities = list(set(entity for pair in similarity_table.keys() for entity in pair))
+    entity_to_index = {entity: i for i, entity in enumerate(entities)}
+
+    num_entities = len(entities)
+    distance_matrix = np.ones((num_entities, num_entities))
+
+    for pair, similarity_score in similarity_table.items():
+        entity1, entity2 = pair
+        index1, index2 = entity_to_index[entity1], entity_to_index[entity2]
+        distance = 1.0 - float(similarity_score)
+
+        distance_matrix[index1, index2] = distance
+        distance_matrix[index2, index1] = distance
+
+    # Convert the distance matrix to a Pandas DataFrame
+    distance_df = pd.DataFrame(distance_matrix, index=entities, columns=entities)
+    print(distance_df)
+    # Convert the DataFrame to a condensed distance matrix
+    condensed_distance_matrix = squareform(distance_df, checks=False)
+
+    # Calculate the linkage matrix
+    linkage_matrix = linkage(condensed_distance_matrix, "average")
+
+    # Convert the linkage matrix to a dendrogram
+    dendrogram(linkage_matrix, labels=distance_df.index, orientation="left", color_threshold=0, above_threshold_color='black')
+
+    # Show the plotted dendrogram
     plt.show()
+
+
 
 def main():
     my_hash_table = read_Blosum62()
 
-    input1=read_fasta_file("Input.txt")
+    input1=read_fasta_file("Input2.txt")
     gap_penalty = getting_gap_penalty()
-
+    
     similarity_table = pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
-    guide_tree(similarity_table)
+
+    alper=guide_tree(similarity_table)
+
 
 
 

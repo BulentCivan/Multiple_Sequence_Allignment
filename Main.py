@@ -152,12 +152,12 @@ def guide_tree(similarity_table):
             print()
             if mergedtable.columns[i] != row and mergedtable.columns[i] != column:
 
-                temp = (mergedtable.iloc[i][row].round(2) + mergedtable.iloc[i][column].round(2))/2
-                print(mergedtable.columns[i], mergedtable.iloc[i][row].round(2), "/2", "+",
-                      mergedtable.iloc[i][column].round(2), "/2", "=", temp.round(2))
+                temp = ((mergedtable.iloc[i][row] + mergedtable.iloc[i][column])/2).round(3)
+                print(mergedtable.columns[i], mergedtable.iloc[i][row].round(3), "/2", "+",
+                      mergedtable.iloc[i][column].round(3), "/2", "=", temp)
 
-                mergedtable.at[new_entity, mergedtable.columns[i]] = temp.round(2)
-                mergedtable.at[mergedtable.columns[i], new_entity] = temp.round(2)
+                mergedtable.at[new_entity, mergedtable.columns[i]] = temp
+                mergedtable.at[mergedtable.columns[i], new_entity] = temp
                 mergedtable.at[new_entity, new_entity] = 1
 
         merged_named = str(count), '. Step: Merged', row, 'and', column, 'to', new_entity
@@ -206,12 +206,14 @@ def UPGMA(similarity_table):
     # Show the plotted dendrogram
     plt.show()
 
+# multiple sequence alignment
 
+    
 
 def main():
     my_hash_table = read_Blosum62()
 
-    input1=read_fasta_file("Input2.txt")
+    input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
     
     similarity_table = pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)

@@ -1,6 +1,21 @@
 import numpy as np
+from scipy.cluster._optimal_leaf_ordering import squareform
+from scipy.cluster.hierarchy import linkage, dendrogram
+import matplotlib.pyplot as plt
+import pandas as pd
 import json
 
+
+similarity_table = {}
+
+class GuideTreeNode:
+    def __init__(self, name):
+        self.name = name
+        self.left = None
+        self.right = None
+        self.distance = 0.0
+
+        
 def read_Blosum62():
     Blosum62_file_path = 'Blosum62.txt'
     scoring_matrix = {}
@@ -36,8 +51,6 @@ def getting_gap_penalty():
             print("Error: Please enter a valid number!")
     return gap_penalty
 
-
-similarity_table = {}
 def pairwise_sequence_alignment(input,blosum62, gap_penalty):
     sequence_names = list(input.keys())
 
@@ -93,7 +106,7 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
             print(allign_length)
             print(exact_matches)
             similarity_score=exact_matches/allign_length
-            similarity_table[(sequence_names[k],sequence_names[l])] = f"{1-similarity_score:.2f}"
+            similarity_table[(sequence_names[k],sequence_names[l])] = f"{similarity_score:.2f}"
 
             print(newseq1)
             print(newseq2)
@@ -106,40 +119,79 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
 
 
 
-def UPGMA(similarity_table):
+def guide_tree(similarity_table):
+    entities = list(set(entity for pair in similarity_table.keys() for entity in pair))
+    entity_to_index = {entity: i for i, entity in enumerate(entities)}
 
-    min_value_key = min(similarity_table, key=lambda k: similarity_table[k])
-    min_value = similarity_table[min_value_key]
-    print("Minimum Distance Names:", min_value_key)
-    print("Minimum Distance Value:", min_value)
-    new_similarity_table = np.ones((len(similarity_table.values()), len(similarity_table.keys())), dtype=float)
-    print(new_similarity_table)
-    for i in range(0, len(new_similarity_table)):
-        #for j in range(0, len(new_similarity_table)):
+    num_entities = len(entities)
+    distance_matrix = np.ones((num_entities, num_entities))
 
-            print(list(similarity_table)[i])
-            if min_value_key[1] in list(similarity_table)[i]:
-                #print((similarity_table)[min_value_key[0]])
+    for pair, similarity_score in similarity_table.items():
+        entity1, entity2 = pair
+        index1, index2 = entity_to_index[entity1], entity_to_index[entity2]
+        distance = 1.0 - float(similarity_score)
+
+        distance_matrix[index1, index2] = distance
+        distance_matrix[index2, index1] = distance
+
+    # Convert the distance matrix to a Pandas DataFrame
+    distance_df = pd.DataFrame(distance_matrix, index=entities, columns=entities)
+
+    #distance matrix minimum valuee
+    minvalue = distance_df.min().min().round(2)
+    min_index = distance_df.stack().idxmin()
+    row, column = min_index
+    print("Minimum Distance Names:", row, column)
+    print(distance_df)
+    for i in range(0, len(distance_df)):
+        new_entity = row + column
+        mergedtable = distance_df
+
+        if distance_df.columns[i] != row and distance_df.columns[i] != column:
+            print()
+            temp = (distance_df.iloc[i][row].round(2) + distance_df.iloc[i][column].round(2))/2
+            print(distance_df.columns[i],distance_df.iloc[i][row].round(2),"/2", "+" ,distance_df.iloc[i][column].round(2),"/2", "=",temp.round(2))
+
+            mergedtable.at[new_entity, distance_df.columns[i]] = temp.round(2)
+            mergedtable.at[distance_df.columns[i], new_entity] = temp.round(2)
+            mergedtable.at[new_entity, new_entity] = 1
+
+                
+                
+        mergedtable = distance_df.drop([row, column])
+        mergedtable = mergedtable.drop([row, column], axis=1)
         
 
+    print("Merged Table:")
+    print(mergedtable)
+            
 
 
+# use upgma method to my distane matrix without scipy
+def UPGMA(distance_df):
+    # Convert the distance DataFrame to a condensed distance matrix
+    distance_condensed = squareform(distance_df, checks=False)
 
+    # Calculate the linkage array and dendrogram
+    linkage_array = linkage(distance_condensed, method='average')
+    dendrogram(linkage_array, labels=distance_df.index, color_threshold=0)
 
+    # Customize and display the plot
+    plt.title('UPGMA Clustering')
+    plt.show()
 
 def main():
     my_hash_table = read_Blosum62()
-    #gap_penalty= getting_gap_penalty()
+
     input1=read_fasta_file("Input.txt")
     gap_penalty = getting_gap_penalty()
 
-
-    #print(pairwise_sequence_alignment(first_value,second_value,my_hash_table, gap_penalty))
-
-
     similarity_table = pairwise_sequence_alignment(input1,my_hash_table, gap_penalty)
+    guide_tree(similarity_table)
 
-    UPGMA(similarity_table)
+
+
+
 
 if __name__ == "__main__":
     main()

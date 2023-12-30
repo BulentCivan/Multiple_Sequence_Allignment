@@ -117,7 +117,20 @@ def pairwise_sequence_alignment(input,blosum62, gap_penalty):
 
     return similarity_table
 
+order_list = ["temp"]
 
+def order_list_names(row,column):
+    new_elements = []
+
+    for k in order_list:
+        if k not in row:
+            new_elements.append(row)
+        if k not in column:
+            new_elements.append(column)
+
+    order_list.extend(new_elements)
+
+    print(order_list)
 
 def guide_tree(similarity_table):
     entities = list(set(entity for pair in similarity_table.keys() for entity in pair))
@@ -146,6 +159,7 @@ def guide_tree(similarity_table):
         print("Minimum Distance Names:", row, column)
         print("Guide Tree: ")
         print(mergedtable)
+        order_list_names(row,column)
 
         for i in range(0, len(mergedtable)):
             new_entity = row + column
@@ -159,7 +173,7 @@ def guide_tree(similarity_table):
                 mergedtable.at[new_entity, mergedtable.columns[i]] = temp
                 mergedtable.at[mergedtable.columns[i], new_entity] = temp
                 mergedtable.at[new_entity, new_entity] = 1
-
+        
         merged_named = str(count), '. Step: Merged', row, 'and', column, 'to', new_entity
         merged_named_list.append(merged_named)
 
